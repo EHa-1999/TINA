@@ -1,0 +1,468 @@
+<title>TINA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Serif:wght@400;600&display=swap">
+<style>
+/* Layout: een demokader met daarin het portaal zoals de inwoner het ziet, in een browservenster; eronder de balk die toont wat het portaal opvraagt. Vormtaal gelijk aan XENA en MIRA. */
+:root{
+  --bg:#eaeff0; --surface:#ffffff; --surface2:#f3f7f7; --line:#d3dcde; --fg:#15262b; --muted:#536970;
+  --accent:#0d6470; --accent-fg:#ffffff; --accent-soft:#dcedef; --sel:#e2f0f2;
+  --amber:#8f5400; --amber-soft:#fbefd6; --red:#a8261d; --red-soft:#fbe3e0;
+  --violet:#5b3fa6; --violet-soft:#ebe5f8; --green:#1b6f3f; --green-soft:#def2e5;
+  --paper:#ffffff; --desk:#ece8e1; --mark:#fbe9a8; --shadow:0 10px 30px rgba(10,40,46,.18);
+  --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --serif:'IBM Plex Serif',Georgia,'Times New Roman',serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1618; --surface:#162023; --surface2:#1c292d; --line:#2c3c41; --fg:#e4eced; --muted:#93a7ad;
+  --accent:#58b9c7; --accent-fg:#06272c; --accent-soft:#17383e; --sel:#1b3a40;
+  --amber:#f0b656; --amber-soft:#3a2c10; --red:#f28b82; --red-soft:#3d1c19;
+  --violet:#b7a2f0; --violet-soft:#2a2244; --green:#6fcf97; --green-soft:#163322;
+  --paper:#1b2427; --desk:#101415; --mark:#5a4a12; --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0e1618; --surface:#162023; --surface2:#1c292d; --line:#2c3c41; --fg:#e4eced; --muted:#93a7ad;
+  --accent:#58b9c7; --accent-fg:#06272c; --accent-soft:#17383e; --sel:#1b3a40;
+  --amber:#f0b656; --amber-soft:#3a2c10; --red:#f28b82; --red-soft:#3d1c19;
+  --violet:#b7a2f0; --violet-soft:#2a2244; --green:#6fcf97; --green-soft:#163322;
+  --paper:#1b2427; --desk:#101415; --mark:#5a4a12; --shadow:0 10px 30px rgba(0,0,0,.5); color-scheme:dark }
+
+*,*::before,*::after{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3,h4,p,dl,dd,ul,ol{margin:0}
+ul,ol{padding:0;list-style:none}
+svg{display:block;flex:none}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+.shell{display:flex;flex-direction:column;gap:10px;padding-block:12px;padding-inline:16px;max-width:1240px;margin-inline:auto}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.ttl{flex:1 1 240px;min-width:0}
+.ttl h1{font-size:17px;font-weight:600}
+.ttl h1 small{font-size:12px;font-weight:500;color:var(--muted);margin-left:10px;white-space:nowrap}
+.ttl .sub{color:var(--muted);font-size:12.5px}
+.seg{display:flex;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:3px;gap:2px}
+.seg button{padding:6px 12px;border-radius:6px;font-weight:500;color:var(--muted);white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.lang{padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.linkbtn{color:var(--accent);font-weight:500;text-decoration:underline;text-underline-offset:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;border:1px solid var(--line);font-weight:500;background:var(--surface)}
+.btn:hover{background:var(--sel)}
+.btn.pri{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+.btn.pri:hover{filter:brightness(1.08);background:var(--accent)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:99px;font-size:11.5px;font-weight:500;line-height:18px;white-space:nowrap}
+.p-green{background:var(--green-soft);color:var(--green)} .p-amber{background:var(--amber-soft);color:var(--amber)}
+.p-red{background:var(--red-soft);color:var(--red)} .p-violet{background:var(--violet-soft);color:var(--violet)}
+.p-grey{background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.hint{font-size:12.5px;color:var(--muted)}
+
+/* browservenster */
+.win{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(10,40,46,.10)}
+.brw{display:flex;align-items:center;gap:10px;padding:6px 12px;background:var(--surface2);border-bottom:1px solid var(--line)}
+.brw .dots{display:flex;gap:5px}.brw .dots i{width:9px;height:9px;border-radius:50%;background:var(--line)}
+.brw .url{flex:1;min-width:0;font-family:var(--mono);font-size:11.5px;background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:3px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.brw .url b{color:var(--fg);font-weight:500}
+
+/* het portaal */
+.skip{position:absolute;left:-999px}.skip:focus{position:static;display:inline-block;margin:6px 16px;padding:6px 10px;background:var(--accent);color:var(--accent-fg);border-radius:6px}
+.ph{background:var(--accent);color:var(--accent-fg);padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 20px}
+.ph .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px;color:inherit;text-decoration:none}
+.ph .brand small{display:block;font-weight:400;font-size:12px;opacity:.85}
+.ph .crest{width:34px;height:34px;border-radius:8px;border:1.5px solid currentColor;display:grid;place-items:center;font-family:var(--serif);font-weight:600}
+.ph nav{margin-left:auto;display:flex;flex-wrap:wrap;gap:4px 16px;font-size:13px}
+.ph nav button{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,currentColor 45%,transparent)}
+.ph nav button[aria-current="page"]{text-decoration-thickness:2px;text-decoration-color:currentColor;font-weight:600}
+.ph :focus-visible{outline-color:var(--accent-fg)}
+.pm{padding:22px 24px 30px;display:grid;gap:18px}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:12.5px;color:var(--muted)}
+.crumbs li+li::before{content:"›";margin-right:8px}
+.h-lead{display:grid;gap:6px;max-width:68ch}
+.h-lead h2{font-family:var(--serif);font-size:26px;line-height:1.2;font-weight:600;text-wrap:balance}
+.h-lead p{color:var(--muted);font-size:15px}
+.sbox{display:flex;flex-wrap:wrap;gap:8px;max-width:760px}
+.sbox label{position:absolute;left:-999px}
+.sbox input{flex:1 1 260px;min-width:0;padding:11px 14px;font-size:16px;border:2px solid var(--accent);border-radius:8px;background:var(--surface)}
+.sbox .btn{padding:11px 20px;font-size:15px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.chip{border:1px solid var(--line);border-radius:99px;padding:3px 11px;background:var(--surface);color:var(--fg);display:inline-flex;gap:6px;align-items:baseline}
+.chip:hover{background:var(--sel)} .chip b{font-weight:500;color:var(--muted);font-size:11px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)} .chip[aria-pressed="true"] b{color:inherit}
+.sec-h{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:8px}
+.cats{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.cat{display:flex;justify-content:space-between;gap:10px;align-items:baseline;padding:11px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);font-weight:500}
+.cat:hover{border-color:var(--accent);background:var(--sel)} .cat b{font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.cat.todo{border-style:dashed;color:var(--muted);cursor:default}
+.two{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:24px;align-items:start}
+.info{background:var(--surface2);border-radius:10px;padding:14px 16px;display:grid;gap:8px;font-size:13.5px}
+.info h3{font-size:14px}
+.rl{display:grid;gap:0}
+.r{padding:13px 0;border-top:1px solid var(--line);display:grid;gap:4px}
+.r:last-child{border-bottom:1px solid var(--line)}
+.r h3{font-size:16px;font-weight:600;line-height:1.3}
+.r h3 button{color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.r h3 button:hover{text-decoration-thickness:2px}
+.r .m{display:flex;flex-wrap:wrap;gap:3px 12px;font-size:12.5px;color:var(--muted);align-items:center}
+.r p{font-size:14px;max-width:78ch}
+mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
+.res{display:grid;grid-template-columns:230px minmax(0,1fr);gap:26px;align-items:start}
+.fac{display:grid;gap:14px}
+.fac fieldset{border:0;padding:0;margin:0;display:grid;gap:3px}
+.fac legend{font-weight:600;font-size:13px;padding:0;margin-bottom:4px}
+.fac label{display:flex;gap:8px;align-items:baseline;font-size:13.5px;padding:2px 0;cursor:pointer}
+.fac label span{flex:1;min-width:0} .fac label b{font-weight:400;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.fac input{accent-color:var(--accent);margin:0;transform:translateY(1px)}
+.rh{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:6px}
+.rh .n{font-size:14px} .rh .n b{font-weight:600}
+.rh label{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.rh select{padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.empty{padding:26px 0;color:var(--muted);max-width:60ch}
+
+/* documentpagina */
+.dp{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:24px;align-items:start}
+.dh{display:grid;gap:6px}
+.dh h2{font-family:var(--serif);font-size:24px;line-height:1.25;font-weight:600;text-wrap:balance}
+.dh .m{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:13px;color:var(--muted);align-items:center}
+.desk{background:var(--desk);border-radius:10px;padding:16px}
+.paper{background:var(--paper);box-shadow:0 1px 4px rgba(0,0,0,.18);padding:26px 34px 34px;font-family:var(--serif);font-size:14.5px;line-height:1.65;display:grid;gap:10px;max-width:720px;margin-inline:auto}
+.paper .pm0{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-family:var(--sans);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:6px}
+.paper h3{font-size:20px;line-height:1.25;font-weight:600;text-wrap:balance}
+.paper p{max-width:64ch}
+.plh{font-family:var(--mono);font-size:.82em;background:var(--violet-soft);color:var(--violet);border-radius:4px;padding:1px 5px;white-space:nowrap;cursor:help;border:0}
+.desk .cap{font-size:12px;color:var(--muted);text-align:center;margin-top:10px}
+.side{display:grid;gap:10px}
+.card{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:8px;background:var(--surface)}
+.card h3{font-size:13px;font-weight:600;display:flex;gap:7px;align-items:center}
+.card .kv{display:grid;grid-template-columns:104px minmax(0,1fr);gap:4px 10px;font-size:13px}
+.card .kv dt{color:var(--muted)} .card .kv dd{overflow-wrap:anywhere}
+.card code,.mono{font-family:var(--mono);font-size:11.5px;overflow-wrap:anywhere}
+.card .btn{justify-content:center}
+.seal{display:flex;gap:10px;align-items:flex-start;font-size:13px}
+.seal .ok{color:var(--green)}
+.chk{display:grid;gap:5px;font-size:13px}
+.chk li{display:flex;gap:7px;align-items:flex-start} .chk svg{color:var(--green);margin-top:2px}
+.om{display:grid;gap:6px;font-size:13px}
+.om li{display:grid;gap:1px} .om small{color:var(--muted);font-size:12px}
+.copy{display:flex;gap:6px;align-items:center} .copy code{flex:1;min-width:0;background:var(--surface2);border-radius:6px;padding:5px 8px}
+.inv{width:100%;border-collapse:collapse;font-size:13.5px}
+.inv th{text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;padding:6px 10px;background:var(--surface2);white-space:nowrap}
+.inv td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+.inv td small{display:block;color:var(--muted);font-size:12px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+.pf{border-top:1px solid var(--line);padding:14px 24px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12.5px;color:var(--muted);background:var(--surface2)}
+
+/* achter het portaal */
+.flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}
+.fb{border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid;gap:6px;align-content:start;background:var(--surface);position:relative}
+.fb h3{font-size:14px} .fb p{font-size:13px;color:var(--muted)}
+.fb .k{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:600;color:var(--muted)}
+.fb.int{background:var(--surface2)} .fb.pub{border-color:var(--accent)}
+.fb+.fb::before{content:"→";position:absolute;left:-10px;top:14px;transform:translateX(-50%);color:var(--muted);font-weight:600}
+.wall{grid-column:1/-1;display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--muted)}
+.wall::before,.wall::after{content:"";flex:1;border-top:2px dashed var(--line)}
+.pts{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+.pts div{border-left:3px solid var(--accent);padding:2px 0 2px 12px;display:grid;gap:3px}
+.pts b{font-size:14px} .pts span{font-size:13px;color:var(--muted)}
+
+.hood{background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;padding:6px 12px}
+.hood b{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;flex:none}
+.hood code{flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:11.5px;overflow-wrap:anywhere}
+.colo{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:6px;z-index:20;max-width:min(380px,calc(100% - 32px))}
+.toast{background:var(--fg);color:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;box-shadow:var(--shadow)}
+
+@media (max-width:860px){
+  .two,.res,.dp{grid-template-columns:minmax(0,1fr)}
+  .flow{grid-template-columns:minmax(0,1fr)} .fb+.fb::before{content:"↓";left:50%;top:-10px;transform:translate(-50%,-50%)}
+  .pm{padding:16px 16px 24px} .ph{padding:12px 16px} .ph nav{margin-left:0} .pf{padding:12px 16px}
+  .paper{padding:18px 18px 24px} .desk{padding:10px}
+  .fac{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));border:1px solid var(--line);border-radius:10px;padding:12px}
+  .rh label{margin-left:0}
+}
+</style>
+
+<div class="shell">
+  <header class="top" id="top"></header>
+  <div id="win"></div>
+  <div class="hood" id="hood"></div>
+  <div class="colo" id="colo"></div>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+var DEMO={v:'@VERSION@',d:'@DATE@'};
+var I18N=window.I18N||{},LANG='nl',LANGS={nl:'Nederlands',de:'Deutsch',en:'English',fr:'Français'};
+function t(s){var d=I18N[LANG],r=s;if(LANG!=='nl'&&d){if(d[s]!==undefined)r=d[s];else if(window.__MISS)window.__MISS.add(s)}
+  for(var i=1;i<arguments.length;i++)r=r.split('{'+(i-1)+'}').join(arguments[i]);return r}
+function setLang(l,keep){LANG=(l==='nl'||I18N[l])?l:'nl';document.documentElement.lang=LANG;if(keep)try{localStorage.setItem('tina.lang',LANG)}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function pad(n){return ('0'+n).slice(-2)}
+var MON={nl:['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+  de:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+  en:['January','February','March','April','May','June','July','August','September','October','November','December'],
+  fr:['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre']};
+function fmtD(iso){var p=iso.split('-'),d=+p[2],m=(MON[LANG]||MON.nl)[+p[1]-1];return LANG==='de'?d+'. '+m+' '+p[0]:LANG==='fr'&&d===1?'1er '+m+' '+p[0]:d+' '+m+' '+p[0]}
+var IC={
+  search:'<circle cx="10.5" cy="10.5" r="6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M15 15l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  seal:'<circle cx="12" cy="10" r="6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 15l-1.5 6 5-2.5 5 2.5-1.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9.5 10l1.8 1.8 3.2-3.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  down:'<path d="M12 4v11M7.5 11l4.5 4.5L16.5 11M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  info:'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 11v6M12 7.5v.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="2.8" fill="none" stroke="currentColor" stroke-width="1.8"/>',
+  tag:'<path d="M3.5 12.5V4.5h8l9 9-8 8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="8" cy="9" r="1.4" fill="currentColor"/>',
+  link:'<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  access:'<circle cx="12" cy="4.8" r="2" fill="currentColor"/><path d="M4.5 8.5l7.5 1.5 7.5-1.5M12 10v5M12 15l-3.5 6M12 15l3.5 6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+function ic(k,s){s=s||16;return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" aria-hidden="true">'+IC[k]+'</svg>'}
+
+/* ---------- gegevens: alles verzonnen ---------- */
+var CATS=[['woo','Woo-verzoeken en -besluiten'],['besl','Beschikkingen'],['verg','Vergaderstukken'],['adv','Adviezen'],['ond','Onderzoeksrapporten'],['beleid','Beleid en plannen'],['regel','Regelgeving']];
+var CATL={};CATS.forEach(function(c){CATL[c[0]]=c[1]});
+var STAT={open:['Volledig openbaar','p-green'],deels:['Deels openbaar','p-amber'],niet:['Niet openbaar','p-red']};
+/* Weigeringsgronden uit de Woo, per soort plaatshouder */
+var PLH={
+  PERSOON:['persoon','Naam weggelaten','De persoonlijke levenssfeer weegt hier zwaarder dan openbaarheid (Woo artikel 5.1, tweede lid, onder e).'],
+  ADRES:['adres','Adres weggelaten','De persoonlijke levenssfeer weegt hier zwaarder dan openbaarheid (Woo artikel 5.1, tweede lid, onder e).'],
+  BELEIDSOPVATTING:['beleidsopvatting','Persoonlijke beleidsopvatting weggelaten','Een persoonlijke opvatting van een medewerker in een stuk voor intern beraad (Woo artikel 5.2).']
+};
+var DOS={'W-2026-014':{nr:'W-2026-014',title:'Woo-verzoek herinrichting Houtplein',recv:'2026-09-21',dec:'2026-10-09',
+  sum:'Verzoek om alle documenten over de herinrichting van het Houtplein, in het bijzonder over parkeren en bomen.',besluit:'besluit-houtplein'}};
+var DOCS=[
+ {id:'besluit-houtplein',title:'Besluit op Woo-verzoek herinrichting Houtplein',cat:'woo',date:'2026-10-09',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'deels',pages:4,size:'0,3 MB',
+  kw:['Houtplein','Woo-verzoek','herinrichting'],
+  body:['Op 21 september 2026 heeft de gemeente een verzoek ontvangen van [PERSOON 1] om alle documenten over de herinrichting van het Houtplein, in het bijzonder over parkeren en bomen.',
+   'Bij de zoekslag zijn acht documenten gevonden. Vier documenten worden volledig openbaar gemaakt, drie gedeeltelijk en één niet.',
+   'Namen van inwoners en van medewerkers zijn weggelaten. De begroting wordt niet openbaar gemaakt, omdat de aanbesteding nog loopt en openbaarmaking de financiële positie van de gemeente kan schaden.',
+   'Tegen dit besluit kan binnen zes weken bezwaar worden gemaakt.']},
+ {id:'projectplan-houtplein',title:'Projectplan herinrichting Houtplein',cat:'beleid',date:'2026-06-04',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'open',pages:18,size:'1,1 MB',
+  kw:['Houtplein','herinrichting','participatie','planning'],
+  body:['Het Houtplein wordt opnieuw ingericht. Het plein krijgt meer groen, minder parkeerplaatsen en een doorgaande fietsroute.',
+   'Dit plan beschrijft de doelen, de planning en de participatie met omwonenden en ondernemers. De grootste risico\'s zitten in het verkeer tijdens de uitvoering en in het behoud van de bomen.',
+   'De uitvoering start in het voorjaar van 2027 en duurt naar verwachting veertien maanden.']},
+ {id:'verkeersonderzoek-houtplein',title:'Verkeersonderzoek Houtplein',cat:'ond',date:'2026-04-09',org:'Gemeente Haarlem',theme:'Verkeer en vervoer',dos:'W-2026-014',status:'open',pages:42,size:'3,8 MB',
+  kw:['Houtplein','verkeer','parkeerdruk','tellingen'],
+  body:['Dit onderzoek brengt de verkeersstromen en de parkeerdruk rond het Houtplein in beeld. De tellingen zijn gehouden in maart 2026.',
+   'Op werkdagen is de parkeerdruk in de omliggende straten nu 82 procent. Na de herinrichting stijgt die naar verwachting tot 91 procent, als er geen aanvullende maatregelen komen.',
+   'Het onderzoek beveelt aan om de vergunningzone uit te breiden en de fietsenstalling bij het station beter te benutten.']},
+ {id:'advies-bomen-houtplein',title:'Advies bomen Houtplein',cat:'adv',date:'2026-07-01',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'open',pages:9,size:'0,9 MB',
+  kw:['Houtplein','bomen','platanen','groen'],
+  body:['De stadsecoloog adviseert over de bomen op het Houtplein. Van de zestien platanen kunnen er elf blijven staan.',
+   'Drie platanen worden verplant naar de rand van het plein. Twee bomen zijn ziek en worden gekapt. Daarvoor komen acht nieuwe bomen terug.']},
+ {id:'presentatie-raadscommissie-houtplein',title:'Presentatie raadscommissie Houtplein',cat:'verg',date:'2026-10-02',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'open',pages:14,size:'6,1 MB',
+  kw:['Houtplein','raadscommissie','voorlopig ontwerp'],
+  body:['Presentatie voor de raadscommissie over het voorlopig ontwerp van het Houtplein.',
+   'Het ontwerp heeft meer groen, minder parkeerplaatsen en een nieuwe fietsroute. De commissie wordt gevraagd om een reactie voordat het definitief ontwerp wordt gemaakt.']},
+ {id:'verslag-participatieavond',title:'Verslag participatieavond Houtplein 12 mei',cat:'verg',date:'2026-05-15',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'deels',pages:6,size:'0,4 MB',
+  kw:['Houtplein','participatie','bewoners','parkeerdruk','bomen'],
+  body:['Op 12 mei 2026 spraken ongeveer zestig bewoners en ondernemers met de gemeente over het Houtplein.',
+   'Bewoners maken zich zorgen over de parkeerdruk en over het kappen van de platanen. [PERSOON 1], wonend aan [ADRES 1], vroeg om een parkeeronderzoek voor de zijstraten.',
+   '[PERSOON 2] stelde voor om de markt tijdens de werkzaamheden te verplaatsen. [PERSOON 3] bood aan om namens de ondernemers mee te denken over de bereikbaarheid.']},
+ {id:'memo-parkeerdruk-houtplein',title:'Memo parkeerdruk Houtplein',cat:'adv',date:'2026-09-08',org:'Gemeente Haarlem',theme:'Verkeer en vervoer',dos:'W-2026-014',status:'deels',pages:3,size:'0,2 MB',
+  kw:['Houtplein','parkeerdruk','vergunningen','terrassen'],
+  body:['Het verkeersonderzoek laat zien dat de parkeerdruk rond het Houtplein na de herinrichting toeneemt.',
+   'Dit memo zet de gevolgen op een rij voor de vergunningen voor terrassen en evenementen op het plein. [BELEIDSOPVATTING 1]',
+   'Het team Vergunningen adviseert om nieuwe terrasvergunningen tot de oplevering alleen tijdelijk te verlenen.']},
+ {id:'notulen-teamoverleg',title:'Notulen teamoverleg Vergunningen 3 september',cat:'verg',date:'2026-09-04',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'deels',pages:2,size:'0,1 MB',
+  kw:['Houtplein','bomen','parkeerdruk','teamoverleg'],
+  body:['Besproken: de werkvoorraad, de werkinstructie leges en de vragen van bewoners over het kappen van bomen bij de herinrichting van het Houtplein.',
+   'Actie voor [PERSOON 1]: een memo over de parkeerdruk opstellen.']},
+ {id:'begroting-houtplein',title:'Begroting herinrichting Houtplein',cat:'beleid',date:'2026-09-26',org:'Gemeente Haarlem',theme:'Openbare ruimte',dos:'W-2026-014',status:'niet',
+  ground:'De aanbesteding loopt nog. Openbaarmaking kan de financiële belangen van de gemeente schaden (Woo artikel 5.1, tweede lid, onder b).',kw:[],body:[]},
+ {id:'raadsvoorstel-zonnepark',title:'Raadsvoorstel zonnepark De Hoge Weide',cat:'verg',date:'2026-10-06',org:'Gemeente Haarlem',theme:'Duurzaamheid',dos:null,status:'open',pages:7,size:'0,8 MB',
+  kw:['zonnepark','De Hoge Weide','energie','raadsvoorstel'],
+  body:['Het college stelt de raad voor mee te werken aan de aanleg van een zonnepark op het perceel De Hoge Weide. Portefeuillehouder is wethouder M. de Graaf.',
+   'Het perceel is 38 hectare groot. De verwachte opbrengst is 41.200 megawattuur per jaar, 6,4 procent van de doelstelling voor hernieuwbare energie.',
+   'Omwonenden kunnen meedoen via een energiecoöperatie.']},
+ {id:'omgevingsvergunning-kleverlaan-12',title:'Omgevingsvergunning Kleverlaan 12',cat:'besl',date:'2026-10-08',org:'Gemeente Haarlem',theme:'Bouwen en wonen',dos:null,status:'deels',pages:5,size:'0,3 MB',
+  kw:['omgevingsvergunning','Kleverlaan','dakopbouw','leges'],
+  body:['Burgemeester en wethouders verlenen aan [PERSOON 1] een omgevingsvergunning voor het plaatsen van een dakopbouw aan de achterzijde van de woning aan de Kleverlaan 12.',
+   'De welstandscommissie heeft positief geadviseerd. De leges zijn berekend volgens de legesverordening 2026.',
+   'Belanghebbenden kunnen binnen zes weken bezwaar maken.']},
+ {id:'evenementenvergunning-circuit',title:'Evenementenvergunning Circuit Zandvoort',cat:'besl',date:'2025-10-28',org:'Gemeente Zandvoort',theme:'Evenementen',dos:null,status:'open',pages:11,size:'0,6 MB',
+  kw:['evenementenvergunning','circuit','geluid','verkeer'],
+  body:['De burgemeester verleent een evenementenvergunning voor het raceweekend op het circuit.',
+   'Aan de vergunning zijn voorschriften verbonden over geluid, verkeer en veiligheid. Het veiligheidsplan maakt deel uit van de vergunning, maar is niet openbaar.']},
+ {id:'eindrapportage-fietsenstalling',title:'Eindrapportage fietsenstalling Stationsplein',cat:'ond',date:'2026-05-22',org:'Gemeente Haarlem',theme:'Verkeer en vervoer',dos:null,status:'open',pages:24,size:'2,2 MB',
+  kw:['fietsenstalling','Stationsplein','evaluatie'],
+  body:['De fietsenstalling onder het Stationsplein is opgeleverd binnen budget en drie weken later dan gepland.',
+   'De stalling heeft 5.100 plekken en is op werkdagen voor 68 procent bezet. De rapportage geeft lessen mee voor volgende projecten, zoals het Houtplein.']},
+ {id:'legesverordening-2026',title:'Legesverordening 2026',cat:'regel',date:'2025-12-18',org:'Gemeente Haarlem',theme:'Belastingen en leges',dos:null,status:'open',pages:31,size:'0,7 MB',
+  kw:['leges','tarieven','verordening'],
+  body:['De raad stelt de tarieven vast voor de leges in 2026. Leges zijn de kosten die de gemeente rekent voor een dienst, zoals een vergunning of een paspoort.',
+   'Voor een omgevingsvergunning hangt het bedrag af van de bouwkosten.']}
+];
+var BY={};DOCS.forEach(function(d,i){BY[d.id]=d;d.pid='nl.haarlem.io:'+('0000'+((i+3)*7919%65536).toString(16)).slice(-4)+'-'+('0000'+((i+11)*104729%65536).toString(16)).slice(-4)+'-'+('0000'+((i+5)*15485863%65536).toString(16)).slice(-4);
+  d.hash=('00000000'+(((i+1)*2654435761)>>>0).toString(16)).slice(-8)+('00000000'+(((i+7)*40503*65537)>>>0).toString(16)).slice(-8)});
+var PUB=DOCS.filter(function(d){return d.status!=='niet'});
+var EX=['Houtplein','parkeerdruk','bomen','leges','zonnepark'];
+
+var S={view:'portaal',route:'home',q:'',f:{},sort:'rel',doc:null,dos:null,seal:false,
+  wire:'GET https://open.gemeente.org/ → startpagina · het portaal leest alleen uit het publicatiedepot'};
+function toast(m){var e=document.createElement('div');e.className='toast';e.textContent=m;document.getElementById('toasts').appendChild(e);setTimeout(function(){e.remove()},4200)}
+
+/* ---------- tekst met plaatshouders ---------- */
+var PRE=/\[(PERSOON|ADRES|BELEIDSOPVATTING) (\d+)\]/g;
+function plain(s){return s.replace(PRE,' ')}
+function rich(s,terms){
+  var out='',last=0,m;PRE.lastIndex=0;
+  while((m=PRE.exec(s))){out+=hl(s.slice(last,m.index),terms);var p=PLH[m[1]];
+    out+='<button type="button" class="plh" data-act="plh" data-k="'+m[1]+'" title="'+esc(t(p[1]))+'" aria-label="'+esc(t(p[1]))+'">['+esc(t(p[0]))+' '+m[2]+']</button>';last=m.index+m[0].length}
+  return out+hl(s.slice(last),terms);
+}
+function reEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function hl(s,terms){if(!terms||!terms.length)return esc(s);var re=new RegExp('('+terms.map(reEsc).join('|')+')','gi');return s.split(re).map(function(x,i){return i%2?'<mark>'+esc(x)+'</mark>':esc(x)}).join('')}
+function omitted(d){var c={};d.body.forEach(function(b){var m;PRE.lastIndex=0;while((m=PRE.exec(t(b))))c[m[1]]=(c[m[1]]||0)+1});return c}
+
+/* ---------- zoeken ---------- */
+function terms(q){var o=[],re=/"([^"]+)"|(\S+)/g,m;while((m=re.exec(q||''))){var v=(m[1]||m[2]).replace(/"/g,'').toLowerCase();if(v)o.push(v)}return o}
+function hay(d){return {ti:t(d.title).toLowerCase(),kw:d.kw.map(function(k){return t(k)}).join(' ').toLowerCase(),tx:plain(d.body.map(function(b){return t(b)}).join(' ')).toLowerCase()}}
+var FAC=[['cat','Soort informatie',function(d){return CATL[d.cat]}],['theme','Onderwerp',function(d){return d.theme}],['year','Jaar',function(d){return d.date.slice(0,4)}],['org','Organisatie',function(d){return d.org}],['status','Openbaarheid',function(d){return STAT[d.status][0]}]];
+function run(){
+  var tm=terms(S.q),base=[];
+  PUB.forEach(function(d){var h=hay(d),sc=0;for(var i=0;i<tm.length;i++){var w=tm[i],s=(h.ti.indexOf(w)>=0?5:0)+(h.kw.indexOf(w)>=0?3:0)+(h.tx.indexOf(w)>=0?1:0);if(!s)return;sc+=s}base.push({d:d,sc:sc,h:h})});
+  var sel=function(k){return Object.keys(S.f[k]||{})};
+  var pass=function(x,skip){return FAC.every(function(f){if(f[0]===skip)return true;var s=sel(f[0]);return !s.length||s.indexOf(f[2](x.d))>=0})};
+  var hits=base.filter(function(x){return pass(x)}),counts={};
+  FAC.forEach(function(f){var c={};base.filter(function(x){return pass(x,f[0])}).forEach(function(x){var v=f[2](x.d);c[v]=(c[v]||0)+1});sel(f[0]).forEach(function(v){c[v]=c[v]||0});counts[f[0]]=c});
+  var byD=function(a,b){return b.d.date.localeCompare(a.d.date)};
+  hits.sort(S.sort==='dat'||!tm.length?byD:S.sort==='ti'?function(a,b){return t(a.d.title).localeCompare(t(b.d.title),LANG)}:function(a,b){return b.sc-a.sc||byD(a,b)});
+  var sug={};if(tm.length&&hits.length>1)hits.forEach(function(x){x.d.kw.forEach(function(k){var l=t(k);if(tm.some(function(w){return l.toLowerCase().indexOf(w)>=0||w.indexOf(l.toLowerCase())>=0}))return;sug[l]=(sug[l]||0)+1})});
+  var sg=Object.keys(sug).filter(function(k){return sug[k]<hits.length}).sort(function(a,b){return sug[b]-sug[a]||a.localeCompare(b,LANG)}).slice(0,6).map(function(k){return [k,sug[k]]});
+  return {hits:hits,counts:counts,tm:tm,sug:sg,any:FAC.some(function(f){return sel(f[0]).length})};
+}
+function snip(d,tm){
+  var tx=d.body.map(function(b){return t(b)}).join(' '),low=tx.toLowerCase(),i=-1;tm.forEach(function(w){var j=low.indexOf(w);if(j>=0&&(i<0||j<i))i=j});
+  var a=0,b=tx.length;if(tx.length>230){a=Math.max(0,(i<0?0:i)-90);b=Math.min(tx.length,a+230);if(a>0){var s=tx.indexOf(' ',a);if(s>0&&s<a+26)a=s+1}if(b<tx.length){var e=tx.lastIndexOf(' ',b);if(e>b-26)b=e}}
+  var cut=tx.slice(a,b),o=cut.lastIndexOf('['),c=cut.lastIndexOf(']');if(o>c)cut=cut.slice(0,o);
+  return (a>0?'… ':'')+rich(cut,tm)+(b<tx.length?' …':'');
+}
+
+/* ---------- onderdelen van het portaal ---------- */
+function meta(d){return '<span>'+esc(t(CATL[d.cat]))+'</span><span>'+fmtD(d.date)+'</span><span>'+esc(t(d.org))+'</span><span class="pill '+STAT[d.status][1]+'">'+esc(t(STAT[d.status][0]))+'</span>'}
+function row(d,tm){return '<li class="r"><h3><button type="button" data-act="doc" data-id="'+d.id+'">'+hl(t(d.title),tm)+'</button></h3><div class="m">'+meta(d)+'</div><p>'+snip(d,tm||[])+'</p></li>'}
+function sbox(big){return '<form class="sbox" role="search" id="sform"><label for="q">'+esc(t('Zoek in openbare documenten'))+'</label><input id="q" type="search" autocomplete="off" value="'+esc(S.q)+'" placeholder="'+esc(t('Bijvoorbeeld: Houtplein, leges, vergunning'))+'"><button class="btn pri" type="submit">'+ic('search')+esc(t('Zoeken'))+'</button></form>'}
+function crumbs(a){return '<nav aria-label="'+esc(t('Kruimelpad'))+'"><ol class="crumbs"><li><button type="button" class="linkbtn" data-act="go" data-r="home">'+esc(t('Start'))+'</button></li>'+a.map(function(x){return '<li>'+x+'</li>'}).join('')+'</ol></nav>'}
+function home(){
+  var cnt={};PUB.forEach(function(d){cnt[d.cat]=(cnt[d.cat]||0)+1});
+  var recent=PUB.slice().sort(function(a,b){return b.date.localeCompare(a.date)}).slice(0,4);
+  return '<div class="h-lead"><h2>'+esc(t('Wat de gemeente openbaar heeft gemaakt'))+'</h2><p>'+esc(t('Zoek in besluiten, vergaderstukken, adviezen en onderzoeken van de gemeenten Haarlem en Zandvoort.'))+'</p></div>'
+    +sbox()+'<div class="chips"><span>'+esc(t('Veel gezocht'))+'</span>'+EX.map(function(q){return '<button type="button" class="chip" data-act="ex" data-q="'+esc(t(q))+'">'+esc(t(q))+'</button>'}).join('')+'</div>'
+    +'<section aria-labelledby="h-cat"><h3 class="sec-h" id="h-cat">'+esc(t('Bladeren op soort informatie'))+'</h3><div class="cats">'+CATS.filter(function(c){return cnt[c[0]]}).map(function(c){return '<button type="button" class="cat" data-act="cat" data-v="'+esc(c[1])+'"><span>'+esc(t(c[1]))+'</span><b>'+cnt[c[0]]+'</b></button>'}).join('')
+      +'<div class="cat todo"><span>'+esc(t('Overige openbaarmaking'))+'</span><b>'+esc(t('volgt'))+'</b></div></div></section>'
+    +'<div class="two"><section aria-labelledby="h-rec"><h3 class="sec-h" id="h-rec">'+esc(t('Laatst gepubliceerd'))+'</h3><ul class="rl">'+recent.map(function(d){return row(d)}).join('')+'</ul></section>'
+    +'<aside class="info" aria-labelledby="h-inf"><h3 id="h-inf">'+esc(t('Wat vind je hier, en wat niet?'))+'</h3><p>'+esc(t('Hier staat wat de gemeente openbaar heeft gemaakt: uit zichzelf, of na een verzoek op grond van de Wet open overheid (Woo).'))+'</p><p>'+esc(t('Persoonsgegevens zijn weggelaten. Waar dat is gebeurd, zie je een paarse plaatshouder met de reden erbij.'))+'</p><p>'+esc(t('Staat iets er niet bij? Dan is het nog niet openbaar gemaakt. Je kunt er een Woo-verzoek voor indienen.'))+'</p><button type="button" class="linkbtn" data-act="go" data-r="uitleg" style="justify-self:start">'+esc(t('Hoe weet ik dat een document echt is?'))+'</button></aside></div>';
+}
+function results(){
+  var R=run(),n=R.hits.length;
+  var fac='<aside class="fac" aria-label="'+esc(t('Verfijn de resultaten'))+'">'+FAC.map(function(f){var c=R.counts[f[0]],ks=Object.keys(c).sort(function(a,b){return f[0]==='year'?b.localeCompare(a):c[b]-c[a]||a.localeCompare(b)});if(ks.length<1)return '';
+    return '<fieldset><legend>'+esc(t(f[1]))+'</legend>'+ks.map(function(v,i){var id='f-'+f[0]+'-'+i;return '<label for="'+id+'"><input type="checkbox" id="'+id+'" data-fac="'+f[0]+'" value="'+esc(v)+'"'+((S.f[f[0]]||{})[v]?' checked':'')+'><span>'+esc(f[0]==='year'?v:t(v))+'</span><b>'+c[v]+'</b></label>'}).join('')+'</fieldset>'}).join('')
+    +(R.any?'<button type="button" class="linkbtn" data-act="clear" style="justify-self:start">'+esc(t('Wis de filters'))+'</button>':'')+'</aside>';
+  var head='<div class="rh"><p class="n" role="status"><b>'+n+'</b> '+esc(n===1?t('document gevonden'):t('documenten gevonden'))+(S.q.trim()?' '+esc(t('voor'))+' <b>'+esc(S.q.trim())+'</b>':'')+'</p><label for="sort">'+esc(t('Sorteer op'))+' <select id="sort">'+[['rel','Beste overeenkomst'],['dat','Nieuwste eerst'],['ti','Titel']].map(function(o){return '<option value="'+o[0]+'"'+(S.sort===o[0]?' selected':'')+'>'+esc(t(o[1]))+'</option>'}).join('')+'</select></label></div>';
+  var sug=R.sug.length?'<div class="chips" style="margin-bottom:8px"><span>'+esc(t('Verfijn met'))+'</span>'+R.sug.map(function(x){return '<button type="button" class="chip" data-act="add" data-q="'+esc(x[0])+'">'+esc(x[0])+' <b>'+x[1]+'</b></button>'}).join('')+'</div>':'';
+  var list=n?'<ul class="rl">'+R.hits.map(function(x){return row(x.d,R.tm)}).join('')+'</ul>':'<p class="empty">'+esc(t('Niets gevonden. Probeer een ander woord of wis een filter. Staat iets er niet bij, dan is het nog niet openbaar gemaakt.'))+'</p>';
+  return crumbs(['<span>'+esc(t('Zoekresultaten'))+'</span>'])+sbox()+'<div class="res">'+fac+'<section aria-label="'+esc(t('Zoekresultaten'))+'">'+head+sug+list+'</section></div>';
+}
+function docPage(){
+  var d=BY[S.doc],dos=d.dos?DOS[d.dos]:null,om=omitted(d),ok=Object.keys(om),tm=terms(S.q);
+  var url='https://open.gemeente.org/doc/'+d.pid;
+  var side='<div class="card"><button type="button" class="btn pri" data-act="dl">'+ic('down')+esc(t('Download het document'))+'</button><p class="hint">PDF/A-2b · '+esc(t('{0} pagina\'s',d.pages))+' · '+esc(d.size)+'</p></div>'
+    +'<div class="card"><h3>'+ic('seal')+esc(t('Echtheid'))+'</h3>'+(S.seal?'<ul class="chk"><li>'+ic('check',15)+'<span>'+esc(t('Het document is niet gewijzigd sinds het is verzegeld.'))+'</span></li><li>'+ic('check',15)+'<span>'+esc(t('Het zegel is van {0}.',t(d.org)))+'</span></li><li>'+ic('check',15)+'<span>'+esc(t('Verzegeld op {0}.',fmtD(d.date)))+'</span></li></ul><p class="hint">'+esc(t('Vingerafdruk'))+' <code>sha256:'+d.hash+'…</code></p><p class="hint">'+esc(t('In deze demo wordt niets echt gecontroleerd. Het echte portaal vergelijkt de vingerafdruk van het bestand met het zegel.'))+'</p>'
+      :'<p class="seal">'+esc(t('Dit document draagt een elektronisch zegel van de gemeente. Daarmee kun je nagaan dat het echt is en niet is veranderd.'))+'</p><button type="button" class="btn" data-act="seal">'+esc(t('Controleer het zegel'))+'</button>')+'</div>'
+    +'<div class="card"><h3>'+ic('tag')+esc(t('Kenmerken'))+'</h3><dl class="kv"><dt>'+esc(t('Soort'))+'</dt><dd>'+esc(t(CATL[d.cat]))+'</dd><dt>'+esc(t('Datum'))+'</dt><dd>'+fmtD(d.date)+'</dd><dt>'+esc(t('Uitgever'))+'</dt><dd>'+esc(t(d.org))+'</dd><dt>'+esc(t('Onderwerp'))+'</dt><dd>'+esc(t(d.theme))+'</dd>'
+      +(dos?'<dt>'+esc(t('Hoort bij'))+'</dt><dd><button type="button" class="linkbtn" data-act="dos" data-id="'+dos.nr+'">'+esc(dos.nr)+'</button></dd>':'')+'<dt>'+esc(t('Taal'))+'</dt><dd>'+esc(t('Nederlands'))+'</dd><dt>'+esc(t('Trefwoorden'))+'</dt><dd>'+d.kw.map(function(k){return esc(t(k))}).join(', ')+'</dd></dl></div>'
+    +'<div class="card"><h3>'+ic('eye')+esc(t('Wat is weggelaten?'))+'</h3>'+(ok.length?'<ul class="om">'+ok.map(function(k){return '<li><span><b>'+om[k]+'×</b> '+esc(t(PLH[k][1]))+'</span><small>'+esc(t(PLH[k][2]))+'</small></li>'}).join('')+'</ul>':'<p class="hint">'+esc(t('Niets. Dit document is volledig openbaar.'))+'</p>')+'</div>'
+    +'<div class="card"><h3>'+ic('access')+esc(t('Toegankelijkheid'))+'</h3><p class="hint">'+esc(t('Het document heeft koppen, een leesvolgorde en beschrijvingen bij afbeeldingen, zodat een schermlezer het kan voorlezen.'))+'</p><button type="button" class="linkbtn" data-act="a11y" style="justify-self:start">'+esc(t('Kun je het niet lezen? Meld het'))+'</button></div>'
+    +'<div class="card"><h3>'+ic('link')+esc(t('Vaste link'))+'</h3><div class="copy"><code id="purl">'+esc(url)+'</code><button type="button" class="btn" data-act="copy">'+esc(t('Kopieer'))+'</button></div><p class="hint">'+esc(t('Deze link blijft werken, ook als het document later wordt verplaatst.'))+'</p></div>';
+  return crumbs([(S.q.trim()||Object.keys(S.f).length?'<button type="button" class="linkbtn" data-act="go" data-r="zoek">'+esc(t('Zoekresultaten'))+'</button>':'<span>'+esc(t(CATL[d.cat]))+'</span>'),'<span>'+esc(t(d.title))+'</span>'])
+    +'<div class="dh"><h2>'+esc(t(d.title))+'</h2><div class="m">'+meta(d)+'</div></div>'
+    +'<div class="dp"><div><div class="desk"><article class="paper" aria-label="'+esc(t('Voorbeeld van het document'))+'"><div class="pm0"><span>'+esc(t(d.org))+'</span><span>'+fmtD(d.date)+'</span></div><h3>'+esc(t(d.title))+'</h3>'+d.body.map(function(b){return '<p>'+rich(t(b),tm)+'</p>'}).join('')+'</article><p class="cap">'+esc(t('Voorbeeld van de eerste pagina. Het hele document staat in de PDF.'))+'</p></div></div><aside class="side" aria-label="'+esc(t('Over dit document'))+'">'+side+'</aside></div>';
+}
+function dosPage(){
+  var o=DOS[S.dos],list=DOCS.filter(function(d){return d.dos===o.nr&&d.id!==o.besluit}),c={open:0,deels:0,niet:0};list.forEach(function(d){c[d.status]++});
+  return crumbs(['<span>'+esc(t('Woo-verzoeken en -besluiten'))+'</span>','<span>'+esc(o.nr)+'</span>'])
+    +'<div class="dh"><h2>'+esc(t(o.title))+'</h2><div class="m"><span class="mono">'+esc(o.nr)+'</span><span>'+esc(t('Ontvangen op {0}',fmtD(o.recv)))+'</span><span>'+esc(t('Besluit op {0}',fmtD(o.dec)))+'</span></div><p style="max-width:70ch">'+esc(t(o.sum))+'</p></div>'
+    +'<div class="chips"><span class="pill p-green">'+c.open+' '+esc(t('volledig openbaar'))+'</span><span class="pill p-amber">'+c.deels+' '+esc(t('deels openbaar'))+'</span><span class="pill p-red">'+c.niet+' '+esc(t('niet openbaar'))+'</span><button type="button" class="linkbtn" data-act="doc" data-id="'+o.besluit+'">'+esc(t('Lees het besluit'))+'</button></div>'
+    +'<div class="tw"><table class="inv"><caption class="skip">'+esc(t('Documenten bij dit verzoek'))+'</caption><thead><tr><th scope="col">'+esc(t('Nr.'))+'</th><th scope="col">'+esc(t('Document'))+'</th><th scope="col">'+esc(t('Datum'))+'</th><th scope="col">'+esc(t('Openbaarheid'))+'</th></tr></thead><tbody>'
+    +list.map(function(d,i){return '<tr><td>'+(i+1)+'</td><td>'+(d.status==='niet'?'<span>'+esc(t(d.title))+'</span><small>'+esc(t(d.ground))+'</small>':'<button type="button" class="linkbtn" data-act="doc" data-id="'+d.id+'">'+esc(t(d.title))+'</button><small>'+esc(t(CATL[d.cat]))+'</small>')+'</td><td>'+fmtD(d.date)+'</td><td><span class="pill '+STAT[d.status][1]+'">'+esc(t(STAT[d.status][0]))+'</span></td></tr>'}).join('')+'</tbody></table></div>'
+    +'<p class="hint" style="max-width:70ch">'+esc(t('Ook een document dat niet openbaar wordt, staat in deze lijst, met de reden. Zo zie je wat er is gevonden en wat de gemeente ermee heeft gedaan.'))+'</p>';
+}
+function uitleg(){
+  return crumbs(['<span>'+esc(t('Over dit portaal'))+'</span>'])
+    +'<div class="h-lead"><h2>'+esc(t('Hoe weet ik dat een document echt is?'))+'</h2><p>'+esc(t('Elk document op dit portaal is door de gemeente verzegeld op het moment van publiceren. Het zegel is een digitale handtekening van de organisatie.'))+'</p></div>'
+    +'<div class="pts"><div><b>'+esc(t('Echt'))+'</b><span>'+esc(t('Het zegel hoort bij de gemeente. Niemand anders kan het zetten.'))+'</span></div><div><b>'+esc(t('Ongewijzigd'))+'</b><span>'+esc(t('Wordt er na het verzegelen één letter veranderd, dan klopt het zegel niet meer.'))+'</span></div><div><b>'+esc(t('Ook na het downloaden'))+'</b><span>'+esc(t('Het zegel zit in het bestand zelf. Je kunt het ook later nog controleren, zonder dit portaal.'))+'</span></div></div>'
+    +'<div class="info" style="max-width:76ch"><h3>'+esc(t('Waarom staan er paarse vakjes in de tekst?'))+'</h3><p>'+esc(t('Dat zijn plaatshouders. Daar stond een naam, een adres of een persoonlijke opvatting die de gemeente niet openbaar mag of hoeft te maken. Klik op een plaatshouder om de reden te lezen.'))+'</p><p>'+esc(t('Namen van bestuurders, zoals een wethouder, blijven wel staan.'))+'</p></div>';
+}
+function portal(){
+  var path=S.route==='home'?'':S.route==='zoek'?'zoek'+(S.q.trim()?'?q='+encodeURIComponent(S.q.trim()):''):S.route==='doc'?'doc/'+BY[S.doc].pid:S.route==='dos'?'woo/'+S.dos:'over';
+  var nav=function(r,l){return '<button type="button" data-act="go" data-r="'+r+'"'+(S.route===r?' aria-current="page"':'')+'>'+esc(t(l))+'</button>'};
+  return '<div class="win"><div class="brw" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span class="url">https://<b>open.gemeente.org</b>/'+esc(path)+'</span></div>'
+    +'<a class="skip" href="#inhoud">'+esc(t('Ga naar de inhoud'))+'</a><div class="ph"><button type="button" class="brand" data-act="go" data-r="home"><span class="crest" aria-hidden="true">H</span><span>'+esc(t('Open overheid'))+'<small>'+esc(t('Gemeenten Haarlem en Zandvoort'))+'</small></span></button>'
+    +'<nav aria-label="'+esc(t('Hoofdmenu'))+'">'+nav('home','Start')+nav('zoek','Alle documenten')+nav('uitleg','Over dit portaal')+'</nav></div>'
+    +'<main class="pm" id="inhoud" tabindex="-1">'+({home:home,zoek:results,doc:docPage,dos:dosPage,uitleg:uitleg})[S.route]()+'</main>'
+    +'<footer class="pf"><span>'+esc(t('Een verzonnen portaal voor een demo. Personen, documenten en nummers bestaan niet.'))+'</span></footer></div>';
+}
+function achter(){
+  var b=function(cls,k,h,p){return '<div class="fb '+cls+'"><span class="k">'+esc(t(k))+'</span><h3>'+esc(t(h))+'</h3><p>'+esc(t(p))+'</p></div>'};
+  return '<div class="win"><div class="pm"><div class="h-lead"><h2>'+esc(t('Achter het portaal'))+'</h2><p>'+esc(t('Het portaal kent de opslag van de gemeente niet. Het leest uit een apart publicatiedepot, waar alleen staat wat bewust openbaar is gemaakt.'))+'</p></div>'
+    +'<div class="flow">'+b('int','Binnen','Opslag en register','Hier werken medewerkers. Elk document heeft kenmerken, versies en een bewaartermijn.')
+      +b('int','Binnen','Publiceren','Na de controles maakt het register een afgeleide: geanonimiseerd, als PDF/A-2b, met nieuwe kenmerken en een zegel.')
+      +b('pub','Buiten','Publicatiedepot','Een aparte opslag met alleen de gepubliceerde versies en een eigen zoekindex.')
+      +b('pub','Buiten','Portaal','Wat de inwoner ziet: zoeken, lezen, downloaden en het zegel controleren.')
+      +'<div class="wall">'+esc(t('Eén richting: van binnen naar buiten. Het portaal kan niets opvragen uit de opslag.'))+'</div></div>'
+    +'<div class="pts"><div><b>'+esc(t('Alleen de geanonimiseerde versie'))+'</b><span>'+esc(t('Het origineel verlaat de opslag niet. Wat hier staat, is een afgeleide zonder persoonsgegevens, in de tekst en in de kenmerken van het bestand.'))+'</span></div>'
+      +'<div><b>'+esc(t('Vindbaar via de index, herkenbaar via het bestand'))+'</b><span>'+esc(t('Het portaal zoekt in de index van het depot. De kenmerken in de PDF zijn er voor wie het bestand downloadt en later los terugvindt.'))+'</span></div>'
+      +'<div><b>'+esc(t('Toegankelijk bij de bron'))+'</b><span>'+esc(t('Koppen, leesvolgorde en beschrijvingen worden gemaakt waar het document ontstaat. Achteraf repareren in een PDF is duurder en slechter.'))+'</span></div>'
+      +'<div><b>'+esc(t('Duurzaam formaat'))+'</b><span>'+esc(t('PDF/A-2b blijft leesbaar, maar kent beperkingen: geen ingesloten bestanden, geen scripts. Een rekenblad wordt dus een weergave van het rekenblad.'))+'</span></div>'
+      +'<div><b>'+esc(t('Intrekken kan'))+'</b><span>'+esc(t('Blijkt er toch iets te veel te staan, dan haalt de gemeente het document uit het depot. De vaste link meldt dan dat het is ingetrokken, met de datum.'))+'</span></div>'
+      +'<div><b>'+esc(t('Meer dan de Woo vraagt'))+'</b><span>'+esc(t('Het portaal is niet beperkt tot de wettelijke categorieën. Welke informatie de gemeente daarbovenop publiceert, is hier nog niet ingevuld.'))+'</span></div></div></div></div>';
+}
+
+/* ---------- weergave ---------- */
+function render(focusMain){
+  document.getElementById('top').innerHTML='<div class="ttl"><h1>TINA<small>Transparent INformation Access</small></h1><div class="sub">'+esc(t('Het zoekportaal voor de inwoner: wat er na publiceren te vinden is.'))+'</div></div>'
+    +'<div class="seg" role="group" aria-label="'+esc(t('Weergave'))+'">'+[['portaal','Het portaal'],['achter','Achter het portaal']].map(function(v){return '<button type="button" data-act="view" data-v="'+v[0]+'" aria-pressed="'+(S.view===v[0])+'">'+esc(t(v[1]))+'</button>'}).join('')+'</div>'
+    +'<select class="lang" id="lang" aria-label="Taal / Language">'+Object.keys(LANGS).filter(function(l){return l==='nl'||I18N[l]}).map(function(l){return '<option value="'+l+'"'+(l===LANG?' selected':'')+'>'+LANGS[l]+'</option>'}).join('')+'</select>';
+  document.getElementById('win').innerHTML=S.view==='portaal'?portal():achter();
+  document.getElementById('hood').innerHTML='<b>'+esc(t('Onder de motorkap'))+'</b><code>'+esc(S.wire)+'</code>';
+  document.getElementById('colo').innerHTML='<span>TINA · '+esc(t('demo versie {0}, {1}',DEMO.v,DEMO.d))+'</span><span>'+esc(t('Onderdeel van XENA, naast de demo van de opslag en MIRA.'))+'</span><span>'+esc(t('Alle voorbeeldgegevens zijn verzonnen.'))+'</span>';
+  if(focusMain){var m=document.getElementById('inhoud');if(m){m.focus({preventScroll:true});var w=document.getElementById('win');if(w.getBoundingClientRect().top<0)w.scrollIntoView()}}
+}
+function wire(){
+  var n;S.wire=S.route==='home'?'GET https://open.gemeente.org/ → '+t('startpagina')+' · '+t('het portaal leest alleen uit het publicatiedepot')
+    :S.route==='zoek'?(n=run().hits.length,'GET /zoek?q='+encodeURIComponent(S.q.trim())+' → '+t('index van het publicatiedepot')+' · '+(n===1?t('1 document'):t('{0} documenten',n))+' · '+t('geen verbinding met de opslag'))
+    :S.route==='doc'?'GET /doc/'+BY[S.doc].pid+' → '+t('publicatiedepot')+' · PDF/A-2b · '+t('zegel aanwezig')
+    :S.route==='dos'?'GET /woo/'+S.dos+' → '+t('publicatiedepot')+' · '+t('inventaris van het Woo-dossier')
+    :'GET /over → '+t('vaste pagina');
+}
+function go(r,focus){S.route=r;S.view='portaal';S.seal=false;wire();render(focus!==false)}
+var A={
+  view:function(e){S.view=e.dataset.v;render()},
+  go:function(e){if(e.dataset.r==='zoek'&&S.route!=='doc'){S.q=S.q}go(e.dataset.r)},
+  ex:function(e){S.q=e.dataset.q;S.f={};go('zoek')},
+  add:function(e){var q=e.dataset.q;S.q=(S.q.trim()+' '+(/\s/.test(q)?'"'+q+'"':q)).trim();go('zoek')},
+  cat:function(e){S.q='';S.f={cat:{}};S.f.cat[e.dataset.v]=true;go('zoek')},
+  clear:function(){S.f={};go('zoek')},
+  doc:function(e){S.doc=e.dataset.id;go('doc')},
+  dos:function(e){S.dos=e.dataset.id;go('dos')},
+  seal:function(){S.seal=true;S.wire='GET /doc/'+BY[S.doc].pid+'/zegel → '+t('zegel en tijdstempel')+' · '+t('controle in de browser, zonder de gemeente te vragen');render()},
+  dl:function(){S.wire='GET /doc/'+BY[S.doc].pid+'.pdf → 200 · application/pdf · PDF/A-2b';render();toast(t('In deze demo is er geen bestand om te downloaden.'))},
+  a11y:function(){toast(t('In het echte portaal opent hier een formulier. De gemeente levert het document dan in een leesbare vorm.'))},
+  plh:function(e){var p=PLH[e.dataset.k];toast(t(p[1])+'. '+t(p[2]))},
+  copy:function(){var el=document.getElementById('purl'),tx=el.textContent,done=function(){toast(t('Link gekopieerd.'))},sel=function(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);toast(t('Link geselecteerd. Kopieer met Ctrl+C.'))};
+    try{navigator.clipboard.writeText(tx).then(done,sel)}catch(x){sel()}}
+};
+document.addEventListener('click',function(ev){var e=ev.target.closest&&ev.target.closest('[data-act]');if(!e)return;var f=A[e.dataset.act];if(f)f(e)});
+document.addEventListener('submit',function(ev){if(ev.target.id!=='sform')return;ev.preventDefault();S.q=document.getElementById('q').value;if(S.route!=='zoek')S.f={};go('zoek',false);var q=document.getElementById('q');if(q)q.focus()});
+document.addEventListener('change',function(ev){var e=ev.target;
+  if(e.id==='lang'){setLang(e.value,true);wire();render();return}
+  if(e.id==='sort'){S.sort=e.value;render();document.getElementById('sort').focus();return}
+  if(e.dataset&&e.dataset.fac){var k=e.dataset.fac,id=e.id;S.f[k]=S.f[k]||{};if(e.checked)S.f[k][e.value]=true;else{delete S.f[k][e.value];if(!Object.keys(S.f[k]).length)delete S.f[k]}wire();render();var n=document.getElementById(id);if(n)n.focus()}});
+window.__tina={strings:function(){var o=[];CATS.forEach(function(c){o.push(c[1])});Object.keys(STAT).forEach(function(k){o.push(STAT[k][0])});Object.keys(PLH).forEach(function(k){o=o.concat(PLH[k])});
+  Object.keys(DOS).forEach(function(k){o.push(DOS[k].title,DOS[k].sum)});DOCS.forEach(function(d){o.push(d.title,d.org,d.theme);if(d.ground)o.push(d.ground);o=o.concat(d.kw,d.body)});FAC.forEach(function(f){o.push(f[1])});return o.concat(EX)},
+  setLang:function(l){setLang(l);wire();render()}};
+(function(){var l='';try{l=localStorage.getItem('tina.lang')||''}catch(e){}var h=(location.hash||'').slice(1).toLowerCase();if(LANGS[h])l=h;setLang(l||'nl')})();
+render();
+})();
+</script>
