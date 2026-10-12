@@ -2,6 +2,9 @@
 
 Het versienummer staat in `VERSION`. Bij elke nieuwe versie: nummer ophogen, hier een regel toevoegen, `python3 build.py` draaien.
 
+## Versie 3 · 12-10-2026
+- Colofon onder de titel, zoals in de andere demo's: makers, contact, achtergrond en licentie.
+
 ## Versie 2 · 11-10-2026
 - Hoort een document bij een dossier, dan staat dat bij het zoekresultaat, met een knop om het hele dossier in één keer te downloaden. Dezelfde knop staat op de dossierpagina.
 

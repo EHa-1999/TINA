@@ -170,7 +170,49 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
 .hood{background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;padding:6px 12px}
 .hood b{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;flex:none}
 .hood code{flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:11.5px;overflow-wrap:anywhere}
-.colo{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+.foot{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px}
+#layer:empty{display:none}
+#layer{position:fixed;inset:0;background:rgba(8,24,28,.45);display:grid;place-items:center;padding:16px;z-index:30}
+.dlg{background:var(--surface);border-radius:10px;box-shadow:var(--shadow);width:100%;max-height:100%;overflow:auto}
+/* colofon */
+@property --ca{syntax:'<angle>';inherits:false;initial-value:0deg}
+.dlg.colo{max-width:640px;padding:0;gap:0;display:flex;flex-direction:column;position:relative;overflow:hidden;isolation:isolate;border:1px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,conic-gradient(from var(--ca,0deg),var(--accent),var(--violet),var(--amber),var(--green),var(--accent)) border-box;animation:clBorder 8s linear infinite}
+.colo .cfx{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1;border-radius:inherit}
+.colo .cin{overflow:auto;min-height:0;flex:1}
+.colo .aur{position:absolute;inset:-40%;z-index:-1;pointer-events:none;opacity:.32;filter:blur(40px);background:radial-gradient(closest-side at 30% 30%,var(--accent),transparent 70%),radial-gradient(closest-side at 70% 40%,var(--violet),transparent 70%),radial-gradient(closest-side at 50% 75%,var(--amber),transparent 70%);animation:clAur 18s ease-in-out infinite alternate}
+.colo .sp{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:0;pointer-events:none;z-index:0;animation:clSp 6s ease-in-out infinite}
+.colo .chead{display:flex;gap:16px;align-items:center;padding:18px 18px 4px}
+.colo .seal{flex:none;width:96px;height:96px;position:relative}
+.colo .seal svg.ring{position:absolute;inset:0;animation:clSpin 28s linear infinite}
+.colo .seal text{font:600 8.4px var(--mono,monospace);letter-spacing:.18em;fill:var(--accent)}
+.colo .seal svg.core{position:absolute;inset:22px;width:52px;height:52px}
+.colo .seal .draw{stroke-dasharray:120;stroke-dashoffset:120;animation:clDraw 1.6s .3s ease-out forwards}
+.colo h2.ct{font-size:24px;margin:0;font-weight:700;letter-spacing:-.01em;background:linear-gradient(100deg,var(--fg) 20%,var(--accent) 40%,var(--violet) 50%,var(--fg) 70%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:clShine 6s ease-in-out infinite}
+.colo .csub{color:var(--muted);font-size:12.5px;margin-top:2px}
+.colo .mb{padding:10px 18px 4px}
+.colo dl{display:grid;grid-template-columns:132px minmax(0,1fr);gap:9px 14px;margin:0;font-size:13px}
+.colo dt{color:var(--muted)}
+.colo dd{margin:0;display:flex;flex-direction:column;gap:1px;overflow-wrap:anywhere}
+.colo dd small{color:var(--muted);font-size:12px}
+.colo dd ul{list-style:disc;margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.colo dd li{display:list-item;border:0;padding:0}
+.colo dd a{color:var(--accent)}
+.colo .sel{user-select:all;font-family:var(--mono);font-size:12px}
+.colo .cl{opacity:0;transform:translateY(8px);animation:clIn .55s cubic-bezier(.2,.7,.2,1) forwards;animation-delay:calc(var(--i)*85ms + 250ms)}
+.colo .cnote{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px;color:var(--muted);font-size:12px}
+.colo .cfoot{display:flex;justify-content:flex-end;padding:10px 18px 16px}
+@media (max-width:560px){.colo .chead{flex-direction:column;align-items:flex-start}.colo dl{grid-template-columns:1fr;gap:2px}.colo dd{margin-bottom:8px}}
+@media (prefers-reduced-motion:reduce){.dlg.colo,.colo .aur,.colo .sp,.colo .seal svg.ring,.colo h2.ct{animation:none}.colo .cl{animation:none;opacity:1;transform:none}.colo .seal .draw{animation:none;stroke-dashoffset:0}}
+@keyframes clBorder{to{--ca:360deg}}
+@keyframes clAur{0%{transform:translate(-6%,-4%) rotate(0deg) scale(1)}100%{transform:translate(6%,5%) rotate(25deg) scale(1.12)}}
+@keyframes clSp{0%{opacity:0;transform:translateY(10px) scale(.6)}30%{opacity:.8}100%{opacity:0;transform:translateY(-60px) scale(1.2)}}
+@keyframes clSpin{to{transform:rotate(360deg)}}
+@keyframes clDraw{to{stroke-dashoffset:0}}
+@keyframes clShine{0%{background-position:100% 0}100%{background-position:0 0}}
+@keyframes clIn{to{opacity:1;transform:none}}
+
+
+
 .toasts{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;gap:6px;z-index:20;max-width:min(380px,calc(100% - 32px))}
 .toast{background:var(--fg);color:var(--bg);padding:8px 12px;border-radius:8px;font-size:13px;box-shadow:var(--shadow)}
 
@@ -188,8 +230,9 @@ mark{background:var(--mark);color:inherit;border-radius:2px;padding:0 1px}
   <header class="top" id="top"></header>
   <div id="win"></div>
   <div class="hood" id="hood"></div>
-  <div class="colo" id="colo"></div>
+  <div class="foot" id="foot"></div>
 </div>
+<div id="layer"></div>
 <div class="toasts" id="toasts" aria-live="polite"></div>
 
 <script>
@@ -430,13 +473,31 @@ function achter(){
 }
 
 /* ---------- weergave ---------- */
+function colofonHtml(){
+  var i=0,r=function(dt,dd){var o='<dt class="cl" style="--i:'+i+'">'+esc(t(dt))+'</dt><dd class="cl" style="--i:'+i+'">'+dd+'</dd>';i++;return o},T=function(s){return esc(t(s))};
+  var sp=[[12,78,0],[28,88,1.4],[46,82,2.6],[63,90,.8],[80,80,3.4],[92,70,2]].map(function(x){return '<span class="sp" style="left:'+x[0]+'%;top:'+x[1]+'%;animation-delay:'+x[2]+'s"></span>'}).join('');
+  return '<div class="dlg colo" role="dialog" aria-modal="true" aria-labelledby="clt"><div class="cfx"><div class="aur"></div>'+sp+'</div><div class="cin"><div class="chead"><div class="seal" aria-hidden="true"><svg class="ring" viewBox="0 0 96 96"><defs><path id="clc" d="M48,48 m-38,0 a38,38 0 1,1 76,0 a38,38 0 1,1 -76,0"/></defs><circle cx="48" cy="48" r="46" fill="none" stroke="var(--line)" stroke-width="1"/><text><textPath href="#clc" textLength="236" lengthAdjust="spacing">WOO · PDF/A · OPEN DATA · EUPL · XENA · TINA · </textPath></text></svg>'
+    +'<svg class="core" viewBox="0 0 24 24"><rect class="draw" x="3.5" y="3" width="11" height="15" rx="1.5" fill="none" stroke="var(--accent)" stroke-width="1.6"/><path class="draw" d="M6.5 7h5M6.5 10h3" stroke="var(--accent)" stroke-width="1.6" stroke-linecap="round" fill="none"/><circle class="draw" cx="15" cy="15" r="4" fill="none" stroke="var(--violet)" stroke-width="1.7"/><path class="draw" d="M18 18l3 3" stroke="var(--violet)" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></div>'
+    +'<div><h2 id="clt" class="ct">'+T('Colofon')+'</h2><div class="csub">TINA · Transparent INformation Access</div><div class="csub">'+esc(t('Interactieve demo, versie {0}',DEMO.v))+' · '+esc(DEMO.d)+'</div></div></div><div class="mb"><dl>'
+    +r('Gemaakt door','<span>Erik Hoekstra</span><small>'+T('Programma-architect en senior consultant')+'</small><small>'+T('Afdeling i-Ontwikkeling, Gemeente Haarlem')+'</small>')
+    +r('Met assistentie van','<span>Claude Opus 5.5</span><small>Anthropic</small>')
+    +r('Contact','<span>ehoekstra@haarlem.nl</span><span>erik@erikhoekstra.com</span>')
+    +r('Ten behoeve van','<ul><li>'+T('Het gesprek over actieve openbaarmaking: wat de inwoner na publiceren vindt, en hoe')+'</li><li>'+T('Het Common Ground-team en het samenwerkingsverband OWC')+'</li><li>'+T('Medewerkers, informatiebeheerders en architecten van de gemeenten Haarlem en Zandvoort')+'</li></ul>')
+    +r('Naam','<span>TINA: Transparent INformation Access</span><small>'+T('Het zoekportaal voor de inwoner binnen XENA')+'</small>')
+    +r('Achtergrond','<span>'+T('XENA, archiefwaardige opslag voor de medewerker')+'</span><small>'+T('De architectuurvisie waarop deze demo is gebaseerd')+'</small>')
+    +r('Copyright','<span>© 2026 '+T('Gemeente Haarlem')+'</span>')
+    +r('Licentie','<span>'+T('Vrij te gebruiken, aan te passen en te verspreiden onder de European Union Public Licence (EUPL) 1.2.')+'</span><a href="https://interoperable-europe.ec.europa.eu/collection/eupl/eupl-text-eupl-12" target="_blank" rel="noopener">'+T('Tekst van de licentie')+'</a>')
+    +'</dl><div class="cnote cl" style="--i:'+i+'">'+T('Een demo, geen product. Alle voorbeeldgegevens zijn verzonnen: personen, adressen, dossiers en zaaknummers bestaan niet. De demo toont wat de architectuur mogelijk maakt; een deel van de functies is toekomstbeeld.')+'</div></div>'
+    +'<div class="cfoot"><button type="button" class="btn pri" data-act="coloX">'+T('Sluiten')+'</button></div></div></div>';
+}
 function render(focusMain){
-  document.getElementById('top').innerHTML='<div class="ttl"><h1>TINA<small>Transparent INformation Access</small></h1><div class="sub">'+esc(t('Het zoekportaal voor de inwoner: wat er na publiceren te vinden is.'))+'</div></div>'
+  document.getElementById('top').innerHTML='<div class="ttl"><h1>TINA<small>Transparent INformation Access</small></h1><div class="sub">'+esc(t('Het zoekportaal voor de inwoner: wat er na publiceren te vinden is.'))+' <span>'+esc(t('Versie {0}',DEMO.v))+'</span> · <span>'+esc(DEMO.d)+'</span> · <button type="button" class="linkbtn" data-act="colofon">'+esc(t('Colofon'))+'</button></div></div>'
     +'<div class="seg" role="group" aria-label="'+esc(t('Weergave'))+'">'+[['portaal','Het portaal'],['achter','Achter het portaal']].map(function(v){return '<button type="button" data-act="view" data-v="'+v[0]+'" aria-pressed="'+(S.view===v[0])+'">'+esc(t(v[1]))+'</button>'}).join('')+'</div>'
     +'<select class="lang" id="lang" aria-label="Taal / Language">'+Object.keys(LANGS).filter(function(l){return l==='nl'||I18N[l]}).map(function(l){return '<option value="'+l+'"'+(l===LANG?' selected':'')+'>'+LANGS[l]+'</option>'}).join('')+'</select>';
   document.getElementById('win').innerHTML=S.view==='portaal'?portal():achter();
   document.getElementById('hood').innerHTML='<b>'+esc(t('Onder de motorkap'))+'</b><code>'+esc(S.wire)+'</code>';
-  document.getElementById('colo').innerHTML='<span>TINA · '+esc(t('demo versie {0}, {1}',DEMO.v,DEMO.d))+'</span><span>'+esc(t('Onderdeel van XENA, naast de demo van de opslag en MIRA.'))+'</span><span>'+esc(t('Alle voorbeeldgegevens zijn verzonnen.'))+'</span>';
+  document.getElementById('foot').innerHTML='<span>TINA · '+esc(t('demo versie {0}, {1}',DEMO.v,DEMO.d))+'</span><span>'+esc(t('Onderdeel van XENA, naast de opslag, MIRA en ELSA.'))+'</span><span>'+esc(t('Alle voorbeeldgegevens zijn verzonnen.'))+'</span>';
+  var L=document.getElementById('layer');if(S.colo){if(!L.firstChild){L.innerHTML=colofonHtml();L.querySelector('[data-act="coloX"]').focus()}}else if(L.firstChild){L.innerHTML='';var cb=document.querySelector('[data-act="colofon"]');if(cb)cb.focus()}
   if(focusMain){var m=document.getElementById('inhoud');if(m){m.focus({preventScroll:true});var w=document.getElementById('win');if(w.getBoundingClientRect().top<0)w.scrollIntoView()}}
 }
 function wire(){
@@ -464,7 +525,8 @@ var A={
   copy:function(){var el=document.getElementById('purl'),tx=el.textContent,done=function(){toast(t('Link gekopieerd.'))},sel=function(){var r=document.createRange();r.selectNodeContents(el);var s=getSelection();s.removeAllRanges();s.addRange(r);toast(t('Link geselecteerd. Kopieer met Ctrl+C.'))};
     try{navigator.clipboard.writeText(tx).then(done,sel)}catch(x){sel()}}
 };
-document.addEventListener('click',function(ev){var e=ev.target.closest&&ev.target.closest('[data-act]');if(!e)return;var f=A[e.dataset.act];if(f)f(e)});
+document.addEventListener('click',function(ev){if(ev.target.id==='layer'&&S.colo){S.colo=false;render();return}var e=ev.target.closest&&ev.target.closest('[data-act]');if(!e)return;if(e.dataset.act==='colofon'){S.colo=true;render();return}if(e.dataset.act==='coloX'){S.colo=false;render();return}var f=A[e.dataset.act];if(f)f(e)});
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&S.colo){S.colo=false;render()}});
 document.addEventListener('submit',function(ev){if(ev.target.id!=='sform')return;ev.preventDefault();S.q=document.getElementById('q').value;if(S.route!=='zoek')S.f={};go('zoek',false);var q=document.getElementById('q');if(q)q.focus()});
 document.addEventListener('change',function(ev){var e=ev.target;
   if(e.id==='lang'){setLang(e.value,true);wire();render();return}
